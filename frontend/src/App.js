@@ -6,8 +6,8 @@ import Dashboard from "./pages/Dashboard";
 import MyRoute from "./pages/MyRoute";
 import Resources from "./pages/Resources";
 import History from "./pages/History";
-import Profile from "./pages/Profile";
 import ManagerDashboard from "./pages/ManagerDashboard";
+import UserProfile from "./pages/UserProfile";
 
 function App() {
   return (
@@ -19,8 +19,9 @@ function App() {
           <Route path="/my-route" element={<MyRoute />} />
           <Route path="/resources" element={<Resources />} />
           <Route path="/history" element={<History />} />
-          <Route path="/profile" element={<Profile />} />
           <Route path="/manager" element={<ManagerDashboard />} />
+          <Route path="/profile" element={<UserProfile />} />
+          <Route path="/users/:id" element={<UserProfile />} />
         </Routes>
       </MainLayout>
     </BrowserRouter>
