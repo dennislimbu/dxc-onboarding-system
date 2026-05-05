@@ -1,0 +1,165 @@
+.route-page {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.route-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.route-header p {
+  margin-top: 8px;
+  color: var(--text-secondary);
+}
+
+.route-summary-card {
+  background: var(--background-card);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  padding: 18px 24px;
+  min-width: 180px;
+  box-shadow: var(--shadow-soft);
+}
+
+.route-summary-card span {
+  display: block;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.route-summary-card strong {
+  font-size: 32px;
+  color: var(--midnight-blue);
+}
+
+.route-progress-bar {
+  height: 12px;
+  width: 100%;
+  background: var(--border-light);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.route-progress-bar div {
+  height: 100%;
+  background: var(--orange);
+  border-radius: 999px;
+}
+
+.route-content {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.route-week h2 {
+  margin-bottom: 20px;
+}
+
+.route-task-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.route-task {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  padding: 16px;
+  background: var(--background-main);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.route-task:hover {
+  transform: scale(1.01);
+  box-shadow: 0 8px 18px rgba(14, 16, 44, 0.08);
+}
+
+.task-left {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+}
+
+.task-left h3 {
+  font-size: 16px;
+  margin-bottom: 4px;
+}
+
+.task-left p {
+  color: var(--text-secondary);
+}
+
+.task-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.status-badge {
+  padding: 7px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.status-badge.open {
+  background: var(--status-open);
+  color: white;
+}
+
+.status-badge.progress {
+  background: var(--status-progress);
+  color: var(--midnight-blue);
+}
+
+.status-badge.completed {
+  background: var(--status-complete);
+  color: var(--midnight-blue);
+}
+
+.status-badge.overdue {
+  background: var(--status-overdue);
+  color: white;
+}
+
+.route-task.completed {
+  opacity: 0.8;
+}
+
+.route-task.overdue {
+  border-color: var(--status-overdue);
+}
+
+.overdue-warning {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--status-overdue);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.resource-btn {
+  border: 1px solid var(--border-light);
+  background: var(--background-card);
+  border-radius: 999px;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--midnight-blue);
+  font-weight: 700;
+  transition: transform 0.18s ease, background 0.18s ease;
+}
+
+.resource-btn:hover {
+  transform: scale(1.05);
+  background: var(--background-hover);
+}
