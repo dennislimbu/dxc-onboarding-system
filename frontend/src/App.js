@@ -1,38 +1,28 @@
-import React, { useEffect, useState } from "react";
-import { getUsers } from "./api/UserApi";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import "./styles/global.css";
+
+import MainLayout from "./layouts/MainLayout";
+import Dashboard from "./pages/Dashboard";
+import MyRoute from "./pages/MyRoute";
+import Resources from "./pages/Resources";
+import History from "./pages/History";
+import Profile from "./pages/Profile";
 
 function App() {
-    const [users, setUsers] = useState([]);
-
-    useEffect(() => {
-        fetchUsers();
-    }, []);
-
-    const fetchUsers = async () => {
-        try {
-            const response = await getUsers();
-            setUsers(response.data);
-        } catch (error) {
-            console.error("Error fetching users:", error);
-        }
-    };
-
-    return (
-        <div style={{ padding: "40px" }}>
-            <h1>DXC Onboarding System</h1>
-            <h2>Users</h2>
-
-            {users.length === 0 ? (
-                <p>No users found</p>
-            ) : (
-                users.map((user) => (
-                    <div key={user.id}>
-                        <p>{user.fullName} - {user.role}</p>
-                    </div>
-                ))
-            )}
-        </div>
-    );
+  return (
+    <BrowserRouter>
+      <MainLayout>
+        <Routes>
+          <Route path="/" element={<Navigate to="/dashboard" />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/my-route" element={<MyRoute />} />
+          <Route path="/resources" element={<Resources />} />
+          <Route path="/history" element={<History />} />
+          <Route path="/profile" element={<Profile />} />
+        </Routes>
+      </MainLayout>
+    </BrowserRouter>
+  );
 }
 
 export default App;

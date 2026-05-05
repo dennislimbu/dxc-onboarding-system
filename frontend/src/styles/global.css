@@ -1,0 +1,108 @@
+:root {
+  --midnight-blue: #0e102c;
+  --royal-blue: #004aac;
+  --sky-blue: #bfe8ff;
+  --orange: #ff7f4a;
+  --yellow: #ffae41;
+  --green: #86e188;
+
+  --background-main: #f6f3f0;
+  --background-card: #fcfbfa;
+  --background-sidebar: #f2efec;
+  --background-hover: #ebe7e4;
+
+  --text-primary: #0e102c;
+  --text-secondary: #5d6475;
+  --text-light: #8d93a1;
+
+  --status-open: #4a99ff;
+  --status-progress: #f4b35d;
+  --status-complete: #7fd37f;
+  --status-overdue: #d14600;
+
+  --border-light: #e8e4e1;
+  --border-medium: #d8d4d0;
+
+  --shadow-soft: 0 4px 16px rgba(14, 16, 44, 0.04);
+
+  --radius-sm: 12px;
+  --radius-md: 20px;
+  --radius-lg: 28px;
+
+  --sidebar-expanded: 220px;
+  --sidebar-collapsed: 72px;
+  --topbar-height: 72px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "GT Standard", Inter, Arial, sans-serif;
+  background: var(--background-main);
+  color: var(--text-primary);
+}
+
+h1 {
+  font-size: 32px;
+  line-height: 40px;
+  font-weight: 600;
+  margin: 0;
+  letter-spacing: -0.03em;
+}
+
+h2 {
+  font-size: 24px;
+  line-height: 32px;
+  font-weight: 600;
+  margin: 0;
+  letter-spacing: -0.03em;
+}
+
+h3 {
+  font-size: 20px;
+  line-height: 28px;
+  font-weight: 600;
+  margin: 0;
+  letter-spacing: -0.03em;
+}
+
+p {
+  font-size: 14px;
+  line-height: 20px;
+  margin: 0;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.app-shell {
+  display: flex;
+  min-height: 100vh;
+}
+
+.main-area {
+  flex: 1;
+  margin-left: var(--sidebar-expanded);
+  transition: margin-left 0.25s ease;
+}
+
+.main-area.collapsed {
+  margin-left: var(--sidebar-collapsed);
+}
+
+.page-content {
+  padding: 32px;
+}
+
+.card {
+  background: var(--background-card);
+  border-radius: var(--radius-md);
+  padding: 24px;
+  border: 1px solid var(--border-light);
+  box-shadow: var(--shadow-soft);
+}

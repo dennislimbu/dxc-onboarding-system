@@ -1,0 +1,84 @@
+.topbar {
+  height: var(--topbar-height);
+  background: var(--background-main);
+  border-bottom: 1px solid var(--border-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.topbar-logo-img {
+  height: 30px;
+  object-fit: contain;
+}
+
+.topbar-actions {
+  position: absolute;
+  right: 32px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.icon-btn {
+  background: var(--background-card);
+  border: 1px solid var(--border-light);
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--midnight-blue);
+}
+
+.profile-menu-wrapper {
+  position: relative;
+}
+
+.profile-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--background-card);
+  border: 1px solid var(--border-light);
+  border-radius: 999px;
+  padding: 10px 16px;
+  font-weight: 600;
+  color: var(--midnight-blue);
+}
+
+.profile-dropdown {
+  position: absolute;
+  right: 0;
+  top: 54px;
+  width: 190px;
+  background: var(--background-card);
+  border: 1px solid var(--border-light);
+  border-radius: 12px;
+  padding: 8px;
+  box-shadow: 0 8px 24px rgba(14, 16, 44, 0.12);
+  z-index: 20;
+}
+
+.profile-dropdown button {
+  width: 100%;
+  border: none;
+  background: transparent;
+  padding: 10px;
+  border-radius: 8px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  font-weight: 600;
+  color: var(--midnight-blue);
+}
+
+.profile-dropdown button:hover {
+  background: var(--background-hover);
+}
+
+.profile-dropdown .logout {
+  color: var(--status-overdue);
+}
