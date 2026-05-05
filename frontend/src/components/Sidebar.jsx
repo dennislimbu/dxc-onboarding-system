@@ -16,7 +16,7 @@ function Sidebar({ collapsed, setCollapsed }) {
     { label: "My Route", icon: Route, path: "/my-route" },
     { label: "Resources", icon: Folder, path: "/resources" },
     { label: "History", icon: Clock, path: "/history" },
-    { label: "Profile", icon: UserCircle, path: "/profile" },
+    { label: "User Profile", icon: UserCircle, path: "/profile" },
   ];
 
   return (
