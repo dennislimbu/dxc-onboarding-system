@@ -1,7 +1,18 @@
 import axios from "axios";
 
-const api = axios.create({
-  baseURL: "http://localhost:8080/api",
-});
+const API_URL = "http://localhost:8080/api/users";
 
-export default api;
+export const getUsers = async () => {
+  const response = await axios.get(API_URL);
+  return response.data;
+};
+
+export const getUserById = async (id) => {
+  const response = await axios.get(`${API_URL}/${id}`);
+  return response.data;
+}
+
+export const updateUser = async (id, userData) => {
+    const response = await axios.put(`${API_URL}/${id}`, userData);
+    return response.data;
+}

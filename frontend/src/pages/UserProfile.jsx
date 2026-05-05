@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 import {
   Mail,
   MapPin,
@@ -12,29 +13,81 @@ import {
   Save,
   X,
 } from "lucide-react";
+import { getUserById, updateUser } from "../services/userService";
 import "./UserProfile.css";
 
 function UserProfile() {
-  const currentRole = "manager"; // change to "user", "manager", or "admin"
+  const { id } = useParams();
+  const currentRole = "manager";
 
   const [isEditOpen, setIsEditOpen] = useState(false);
-
-  const [employee, setEmployee] = useState({
-    name: "Sam Smith",
-    role: "Jr Software Engineer",
-    team: "IPE Classic",
-    gender: "Male",
-    age: "24 Years",
-    email: "samsmith123@dxc.com",
-    employeeId: "EMP-20152431-117",
-    location: "London Road Building",
-    phone: "+44 7896359568",
-    dateJoined: "28/09/2025",
-    tags: ["Software Engineer", "IPE Classic", "Java"],
-    notes: "",
-  });
+  const [employee, setEmployee] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const canEdit = currentRole === "manager" || currentRole === "admin";
+
+  useEffect(() => {
+    loadUser();
+  }, [id]);
+
+  const loadUser = async () => {
+    try {
+      const data = await getUserById(id || 1);
+
+      setEmployee({
+        id: data.id,
+        name: data.fullName,
+        role: data.jobTitle,
+        team: data.department,
+        gender: "Not set",
+        age: "Not set",
+        email: data.email,
+        employeeId: `EMP-${data.id}`,
+        location: data.location,
+        phone: "Not set",
+        dateJoined: "Not set",
+        progress: data.onboardingProgress,
+        tags: [data.role, data.department, data.jobTitle],
+        notes: "",
+      });
+    } catch (error) {
+      console.error("Failed to load user", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const saveEmployee = async (updatedEmployee) => {
+    const payload = {
+      fullName: updatedEmployee.name,
+      email: updatedEmployee.email,
+      role: updatedEmployee.tags[0] || "USER",
+      department: updatedEmployee.team,
+      jobTitle: updatedEmployee.role,
+      location: updatedEmployee.location,
+      onboardingProgress: updatedEmployee.progress,
+    };
+
+    const savedUser = await updateUser(employee.id, payload);
+
+    setEmployee({
+      ...updatedEmployee,
+      name: savedUser.fullName,
+      email: savedUser.email,
+      role: savedUser.jobTitle,
+      team: savedUser.department,
+      location: savedUser.location,
+      progress: savedUser.onboardingProgress,
+    });
+  };
+
+  if (loading) {
+    return <p>Loading user profile...</p>;
+  }
+
+  if (!employee) {
+    return <p>User not found.</p>;
+  }
 
   return (
     <div className="user-profile-page">
@@ -111,12 +164,12 @@ function UserProfile() {
 
         <div className="task-overview-card card">
           <h3>Task Overview</h3>
-          <p>Completion rate: 65%</p>
+          <p>Completion rate: {employee.progress}%</p>
 
           <div className="stacked-bar">
-            <div className="open" style={{ width: "50%" }}></div>
-            <div className="progress" style={{ width: "20%" }}></div>
-            <div className="complete" style={{ width: "30%" }}></div>
+            <div className="open" style={{ width: `${100 - employee.progress}%` }}></div>
+            <div className="progress" style={{ width: "10%" }}></div>
+            <div className="complete" style={{ width: `${employee.progress}%` }}></div>
           </div>
 
           <div className="legend">
@@ -128,7 +181,7 @@ function UserProfile() {
 
         <div className="overdue-card card">
           <h3>Overdue Tasks</h3>
-          <p>Overdue rate: 15%</p>
+          <p>Overdue rate: {employee.progress < 50 ? "20%" : "0%"}</p>
 
           <table>
             <thead>
@@ -140,21 +193,24 @@ function UserProfile() {
             </thead>
 
             <tbody>
-              <tr>
-                <td>Setting Up Work Local Environment</td>
-                <td>15 Days</td>
-                <td>05/09/2025</td>
-              </tr>
-              <tr>
-                <td>Business Process</td>
-                <td>10 Days</td>
-                <td>10/09/2025</td>
-              </tr>
-              <tr>
-                <td>Training Module 1</td>
-                <td>5 Days</td>
-                <td>15/09/2025</td>
-              </tr>
+              {employee.progress < 50 ? (
+                <>
+                  <tr>
+                    <td>Setting Up Work Local Environment</td>
+                    <td>15 Days</td>
+                    <td>05/09/2025</td>
+                  </tr>
+                  <tr>
+                    <td>Business Process</td>
+                    <td>10 Days</td>
+                    <td>10/09/2025</td>
+                  </tr>
+                </>
+              ) : (
+                <tr>
+                  <td colSpan="3">No overdue tasks.</td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
@@ -163,7 +219,7 @@ function UserProfile() {
       {isEditOpen && canEdit && (
         <EditEmployeeModal
           employee={employee}
-          setEmployee={setEmployee}
+          onSave={saveEmployee}
           onClose={() => setIsEditOpen(false)}
         />
       )}
@@ -183,7 +239,7 @@ function InfoItem({ icon, label, value }) {
   );
 }
 
-function EditEmployeeModal({ employee, setEmployee, onClose }) {
+function EditEmployeeModal({ employee, onSave, onClose }) {
   const [formData, setFormData] = useState({
     ...employee,
     tagsText: employee.tags.join(", "),
@@ -193,15 +249,16 @@ function EditEmployeeModal({ employee, setEmployee, onClose }) {
     setFormData({ ...formData, [field]: value });
   };
 
-  const saveChanges = () => {
-    setEmployee({
+  const saveChanges = async () => {
+    const updatedEmployee = {
       ...formData,
       tags: formData.tagsText
         .split(",")
         .map((tag) => tag.trim())
         .filter(Boolean),
-    });
+    };
 
+    await onSave(updatedEmployee);
     onClose();
   };
 
@@ -228,6 +285,16 @@ function EditEmployeeModal({ employee, setEmployee, onClose }) {
           <Input label="Location Based" value={formData.location} onChange={(v) => updateField("location", v)} />
           <Input label="Phone Number" value={formData.phone} onChange={(v) => updateField("phone", v)} />
         </div>
+
+        <label className="modal-label">Progress</label>
+        <input
+          className="modal-input"
+          type="number"
+          min="0"
+          max="100"
+          value={formData.progress}
+          onChange={(event) => updateField("progress", Number(event.target.value))}
+        />
 
         <label className="modal-label">Tags</label>
         <input
