@@ -1,6 +1,9 @@
 import axios from "axios";
 
-const API_URL = "http://localhost:8080/api/users";
+const API_BASE_URL =
+  process.env.REACT_APP_API_URL || "http://localhost:8080";
+
+const API_URL = `${API_BASE_URL}/api/users`;
 
 export const getUsers = async () => {
   const response = await axios.get(API_URL);
@@ -10,9 +13,9 @@ export const getUsers = async () => {
 export const getUserById = async (id) => {
   const response = await axios.get(`${API_URL}/${id}`);
   return response.data;
-}
+};
 
 export const updateUser = async (id, userData) => {
-    const response = await axios.put(`${API_URL}/${id}`, userData);
-    return response.data;
-}
+  const response = await axios.put(`${API_URL}/${id}`, userData);
+  return response.data;
+};

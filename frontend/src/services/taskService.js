@@ -1,18 +1,21 @@
 import axios from "axios";
 
-const API_URL = "http://localhost:8080/api/tasks";
+const API_BASE_URL =
+  process.env.REACT_APP_API_URL || "http://localhost:8080";
 
-export const getTasksByUser = async (userId) => {
-  const response = await axios.get(`${API_URL}/user/${userId}`);
+const API_URL = `${API_BASE_URL}/api/users`;
+
+export const getUsers = async () => {
+  const response = await axios.get(API_URL);
   return response.data;
 };
 
-export const completeTask = async (taskId) => {
-  const response = await axios.put(`${API_URL}/${taskId}/complete`);
+export const getUserById = async (id) => {
+  const response = await axios.get(`${API_URL}/${id}`);
   return response.data;
 };
 
-export const createTaskForUser = async (userId, taskData) => {
-  const response = await axios.post(`${API_URL}/user/${userId}`, taskData);
+export const updateUser = async (id, userData) => {
+  const response = await axios.put(`${API_URL}/${id}`, userData);
   return response.data;
 };
