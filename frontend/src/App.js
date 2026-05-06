@@ -1,7 +1,11 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import "./styles/global.css";
 
+import { AuthProvider } from "./context/AuthContext";
+import ProtectedRoute from "./components/ProtectedRoute";
+
 import MainLayout from "./layouts/MainLayout";
+import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import MyRoute from "./pages/MyRoute";
 import Resources from "./pages/Resources";
@@ -12,18 +16,93 @@ import UserProfile from "./pages/UserProfile";
 function App() {
   return (
     <BrowserRouter>
-      <MainLayout>
+      <AuthProvider>
         <Routes>
-          <Route path="/" element={<Navigate to="/dashboard" />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/my-route" element={<MyRoute />} />
-          <Route path="/resources" element={<Resources />} />
-          <Route path="/history" element={<History />} />
-          <Route path="/manager" element={<ManagerDashboard />} />
-          <Route path="/profile" element={<UserProfile />} />
-          <Route path="/users/:id" element={<UserProfile />} />
+          <Route path="/login" element={<Login />} />
+
+          <Route
+            path="/"
+            element={<Navigate to="/dashboard" />}
+          />
+
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <Dashboard />
+                </MainLayout>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/my-route"
+            element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <MyRoute />
+                </MainLayout>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/resources"
+            element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <Resources />
+                </MainLayout>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/history"
+            element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <History />
+                </MainLayout>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/manager"
+            element={
+              <ProtectedRoute allowedRoles={["MANAGER", "ADMIN"]}>
+                <MainLayout>
+                  <ManagerDashboard />
+                </MainLayout>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <UserProfile />
+                </MainLayout>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/users/:id"
+            element={
+              <ProtectedRoute allowedRoles={["MANAGER", "ADMIN"]}>
+                <MainLayout>
+                  <UserProfile />
+                </MainLayout>
+              </ProtectedRoute>
+            }
+          />
         </Routes>
-      </MainLayout>
+      </AuthProvider>
     </BrowserRouter>
   );
 }

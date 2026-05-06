@@ -1,114 +1,107 @@
+import { useEffect, useState } from "react";
 import { CheckCircle2, Circle, ExternalLink, AlertTriangle } from "lucide-react";
+import { completeTask, getTasksByUser } from "../services/taskService";
+import { useAuth } from "../context/AuthContext";
 import "./MyRoute.css";
 
 function MyRoute() {
-  const weeks = [
-    {
-      title: "Week 1: Team and Environment Setup",
-      tasks: [
-        {
-          title: "Business Process Overview",
-          status: "open",
-          dueDate: "10 May 2026",
-          type: "Document",
-        },
-        {
-          title: "Access Request",
-          status: "completed",
-          dueDate: "10 May 2026",
-          type: "Form",
-        },
-        {
-          title: "Work Local Environment",
-          status: "progress",
-          dueDate: "12 May 2026",
-          type: "Guide",
-        },
-        {
-          title: "Security Training",
-          status: "overdue",
-          dueDate: "08 May 2026",
-          type: "Training",
-        },
-      ],
-    },
-    {
-      title: "Week 2: Role-Specific Induction",
-      tasks: [
-        {
-          title: "GitHub Setup",
-          status: "open",
-          dueDate: "17 May 2026",
-          type: "Software",
-        },
-        {
-          title: "Best Practices",
-          status: "completed",
-          dueDate: "18 May 2026",
-          type: "Document",
-        },
-        {
-          title: "Training Module 1",
-          status: "progress",
-          dueDate: "20 May 2026",
-          type: "Video",
-        },
-      ],
-    },
-  ];
+  const { user } = useAuth();
+  const userId = user?.id;
+
+  const [tasks, setTasks] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (userId) {
+      loadTasks();
+    }
+  }, [userId]);
+
+  const loadTasks = async () => {
+    try {
+      setLoading(true);
+      const data = await getTasksByUser(userId);
+      setTasks(data);
+    } catch (error) {
+      console.error("Failed to load tasks", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleComplete = async (taskId) => {
+    await completeTask(taskId);
+    loadTasks();
+  };
+
+  const completedCount = tasks.filter(
+    (task) => task.status === "COMPLETED"
+  ).length;
+
+  const progress =
+    tasks.length === 0 ? 0 : Math.round((completedCount / tasks.length) * 100);
 
   return (
     <div className="route-page">
       <div className="route-header">
         <div>
           <h1>My Route</h1>
-          <p>Technical onboarding route assigned to Sam Smith.</p>
+          <p>Technical onboarding route assigned to {user?.name || "User"}.</p>
         </div>
 
         <div className="route-summary-card">
           <span>Overall Progress</span>
-          <strong>65%</strong>
+          <strong>{progress}%</strong>
         </div>
       </div>
 
       <div className="route-progress-bar">
-        <div style={{ width: "65%" }}></div>
+        <div style={{ width: `${progress}%` }}></div>
       </div>
 
-      <div className="route-content">
-        {weeks.map((week) => (
-          <section className="route-week card" key={week.title}>
-            <h2>{week.title}</h2>
+        {loading ? (
+          <p className="loading-text">Loading onboarding tasks...</p>
+        ) : (
+        <div className="route-content">
+          <section className="route-week card">
+            <h2>Assigned Onboarding Tasks</h2>
 
             <div className="route-task-list">
-              {week.tasks.map((task) => (
-                <TaskRow key={task.title} task={task} />
-              ))}
+              {tasks.length === 0 ? (
+                <p className="empty-text">No tasks assigned yet.</p>
+              ) : (
+                tasks.map((task) => (
+                  <TaskRow
+                    key={task.id}
+                    task={task}
+                    onComplete={handleComplete}
+                  />
+                ))
+              )}
             </div>
           </section>
-        ))}
-      </div>
+        </div>
+      )}
     </div>
   );
 }
 
-function TaskRow({ task }) {
-  const isCompleted = task.status === "completed";
-  const isOverdue = task.status === "overdue";
+function TaskRow({ task, onComplete }) {
+  const isCompleted = task.status === "COMPLETED";
+  const isOverdue =
+    task.status !== "COMPLETED" &&
+    task.dueDate &&
+    new Date(task.dueDate) < new Date();
 
   return (
-    <div className={`route-task ${task.status}`}>
+    <div className={`route-task ${isOverdue ? "overdue" : task.status.toLowerCase()}`}>
       <div className="task-left">
-        {isCompleted ? (
-          <CheckCircle2 size={22} />
-        ) : (
-          <Circle size={22} />
-        )}
+        {isCompleted ? <CheckCircle2 size={22} /> : <Circle size={22} />}
 
         <div>
           <h3>{task.title}</h3>
           <p>
-            {task.type} · Due {task.dueDate}
+            {task.type} · Due {task.dueDate || "Not set"}
           </p>
         </div>
       </div>
@@ -121,24 +114,38 @@ function TaskRow({ task }) {
           </span>
         )}
 
-        <span className={`status-badge ${task.status}`}>
-          {formatStatus(task.status)}
+        <span className={`status-badge ${mapStatusClass(task.status, isOverdue)}`}>
+          {formatStatus(task.status, isOverdue)}
         </span>
 
         <button className="resource-btn">
           <ExternalLink size={15} />
           Resource
         </button>
+
+        {!isCompleted && (
+          <button className="complete-btn" onClick={() => onComplete(task.id)}>
+            Mark Complete
+          </button>
+        )}
       </div>
     </div>
   );
 }
 
-function formatStatus(status) {
-  if (status === "open") return "Open";
-  if (status === "progress") return "In Progress";
-  if (status === "completed") return "Completed";
-  if (status === "overdue") return "Overdue";
+function mapStatusClass(status, isOverdue) {
+  if (isOverdue) return "overdue";
+  if (status === "OPEN") return "open";
+  if (status === "IN_PROGRESS") return "progress";
+  if (status === "COMPLETED") return "completed";
+  return "open";
+}
+
+function formatStatus(status, isOverdue) {
+  if (isOverdue) return "Overdue";
+  if (status === "OPEN") return "Open";
+  if (status === "IN_PROGRESS") return "In Progress";
+  if (status === "COMPLETED") return "Completed";
   return status;
 }
 

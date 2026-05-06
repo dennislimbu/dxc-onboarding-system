@@ -310,3 +310,36 @@
   border: 1px solid var(--border-medium);
   background: var(--background-card);
 }
+
+.task-overview-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.add-task-btn {
+  border: none;
+  background: var(--midnight-blue);
+  color: white;
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform 0.18s ease, filter 0.18s ease;
+}
+
+.add-task-btn:hover {
+  transform: scale(1.05);
+  filter: brightness(0.9);
+}
+
+.modal-field select {
+  width: 100%;
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  background: var(--background-main);
+  padding: 10px 12px;
+  font-family: inherit;
+  font-weight: 600;
+}

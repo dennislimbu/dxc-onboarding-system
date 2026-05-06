@@ -7,17 +7,28 @@ import {
   Menu,
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import dxcLogo from "../assets/images/dxc-logo.svg";
 import "./Sidebar.css";
 
 function Sidebar({ collapsed, setCollapsed }) {
+  const { user } = useAuth();
+
   const navItems = [
     { label: "Dashboard", icon: LayoutDashboard, path: "/dashboard" },
     { label: "My Route", icon: Route, path: "/my-route" },
     { label: "Resources", icon: Folder, path: "/resources" },
     { label: "History", icon: Clock, path: "/history" },
-    { label: "User Profile", icon: UserCircle, path: "/profile" },
+    { label: "Profile", icon: UserCircle, path: "/profile" },
   ];
+
+  if (user && (user.role === "MANAGER" || user.role === "ADMIN")) {
+    navItems.push({
+      label: "Manager",
+      icon: UserCircle,
+      path: "/manager",
+    });
+  }
 
   return (
     <aside className={`sidebar ${collapsed ? "collapsed" : ""}`}>

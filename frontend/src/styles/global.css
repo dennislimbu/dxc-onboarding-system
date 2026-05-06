@@ -106,3 +106,48 @@ button {
   border: 1px solid var(--border-light);
   box-shadow: var(--shadow-soft);
 }
+
+.loading-text,
+.empty-text {
+  color: var(--text-secondary);
+  font-weight: 600;
+  padding: 16px 0;
+}
+
+@media (max-width: 1366px) {
+  .page-content {
+    padding: 24px;
+  }
+
+  h1 {
+    font-size: 28px;
+  }
+
+  h2 {
+    font-size: 22px;
+  }
+}
+
+@media (max-width: 1200px) {
+  .task-board,
+  .resources-grid,
+  .manager-summary-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .summary-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 800px) {
+  .task-board,
+  .resources-grid,
+  .manager-summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .topbar-actions {
+    right: 16px;
+  }
+}

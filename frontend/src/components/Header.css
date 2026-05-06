@@ -82,3 +82,13 @@
 .profile-dropdown .logout {
   color: var(--status-overdue);
 }
+
+.logo-home-btn {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.logo-home-btn:hover {
+  transform: scale(1.04);
+}

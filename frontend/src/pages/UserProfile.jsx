@@ -14,18 +14,23 @@ import {
   X,
 } from "lucide-react";
 import { getUserById, updateUser } from "../services/userService";
+import { getTasksByUser, createTaskForUser } from "../services/taskService";
+import { useAuth } from "../context/AuthContext";
 import "./UserProfile.css";
 
 function UserProfile() {
   const { id } = useParams();
-  const currentRole = "manager";
+  const { user } = useAuth();
+  const currentRole = user?.role;
+  const canEdit = currentRole === "MANAGER" || currentRole === "ADMIN";
+  
 
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [employee, setEmployee] = useState(null);
+  const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const canEdit = currentRole === "manager" || currentRole === "admin";
-
+  const [isAddTaskOpen, setIsAddTaskOpen] = useState(false);
   useEffect(() => {
     loadUser();
   }, [id]);
@@ -33,6 +38,7 @@ function UserProfile() {
   const loadUser = async () => {
     try {
       const data = await getUserById(id || 1);
+      const userTasks = await getTasksByUser(data.id);
 
       setEmployee({
         id: data.id,
@@ -50,6 +56,8 @@ function UserProfile() {
         tags: [data.role, data.department, data.jobTitle],
         notes: "",
       });
+
+      setTasks(userTasks);
     } catch (error) {
       console.error("Failed to load user", error);
     } finally {
@@ -81,13 +89,39 @@ function UserProfile() {
     });
   };
 
+  const addTask = async (taskData) => {
+    await createTaskForUser(employee.id, taskData);
+    const updatedTasks = await getTasksByUser(employee.id);
+    setTasks(updatedTasks);
+  };
+
   if (loading) {
-    return <p>Loading user profile...</p>;
+    return <p className="loading-text">Loading user profile...</p>;
   }
 
   if (!employee) {
     return <p>User not found.</p>;
   }
+
+  const completedTasks = tasks.filter(
+    (task) => task.status === "COMPLETED"
+  ).length;
+
+  const openTasks = tasks.filter((task) => task.status === "OPEN").length;
+
+  const inProgressTasks = tasks.filter(
+    (task) => task.status === "IN_PROGRESS"
+  ).length;
+
+  const overdueTasks = tasks.filter(
+    (task) =>
+      task.status !== "COMPLETED" &&
+      task.dueDate &&
+      new Date(task.dueDate) < new Date()
+  );
+
+  const progress =
+    tasks.length === 0 ? 0 : Math.round((completedTasks / tasks.length) * 100);
 
   return (
     <div className="user-profile-page">
@@ -108,7 +142,6 @@ function UserProfile() {
 
           {canEdit && (
             <button className="edit-small-btn" onClick={() => setIsEditOpen(true)}>
-              <Edit size={14} />
               Edit
             </button>
           )}
@@ -116,13 +149,29 @@ function UserProfile() {
 
         <div className="info-grid">
           <InfoItem icon={<User />} label="Name" value={employee.name} />
-          <InfoItem icon={<Calendar />} label="Date Joined" value={employee.dateJoined} />
+          <InfoItem
+            icon={<Calendar />}
+            label="Date Joined"
+            value={employee.dateJoined}
+          />
           <InfoItem icon={<Briefcase />} label="Role" value={employee.role} />
           <InfoItem icon={<Briefcase />} label="Team" value={employee.team} />
-          <InfoItem icon={<IdCard />} label="Employee ID" value={employee.employeeId} />
+          <InfoItem
+            icon={<IdCard />}
+            label="Employee ID"
+            value={employee.employeeId}
+          />
           <InfoItem icon={<Mail />} label="Work Email" value={employee.email} />
-          <InfoItem icon={<MapPin />} label="Location Based" value={employee.location} />
-          <InfoItem icon={<Phone />} label="Phone Number" value={employee.phone} />
+          <InfoItem
+            icon={<MapPin />}
+            label="Location Based"
+            value={employee.location}
+          />
+          <InfoItem
+            icon={<Phone />}
+            label="Phone Number"
+            value={employee.phone}
+          />
         </div>
 
         <div className="tags-section">
@@ -144,12 +193,11 @@ function UserProfile() {
           <div className="notes-header">
             <h3>Notes</h3>
 
-            {canEdit && (
-              <button className="edit-small-btn" onClick={() => setIsEditOpen(true)}>
-                <Edit size={14} />
-                Edit
-              </button>
-            )}
+          {canEdit && (
+            <button className="edit-small-btn" onClick={() => setIsEditOpen(true)}>
+              Edit
+            </button>
+          )}
           </div>
 
           <textarea
@@ -163,25 +211,70 @@ function UserProfile() {
         </div>
 
         <div className="task-overview-card card">
-          <h3>Task Overview</h3>
-          <p>Completion rate: {employee.progress}%</p>
+          <div className="task-overview-header">
+            <h3>Task Overview</h3>
+            {canEdit && (
+              <button className="add-task-btn" onClick={() => setIsAddTaskOpen(true)}>
+                Add Task
+              </button>
+            )}
+          </div>
+          <p>Completion rate: {progress}%</p>
 
           <div className="stacked-bar">
-            <div className="open" style={{ width: `${100 - employee.progress}%` }}></div>
-            <div className="progress" style={{ width: "10%" }}></div>
-            <div className="complete" style={{ width: `${employee.progress}%` }}></div>
+            <div
+              className="open"
+              style={{
+                width:
+                  tasks.length === 0
+                    ? "0%"
+                    : `${(openTasks / tasks.length) * 100}%`,
+              }}
+            ></div>
+
+            <div
+              className="progress"
+              style={{
+                width:
+                  tasks.length === 0
+                    ? "0%"
+                    : `${(inProgressTasks / tasks.length) * 100}%`,
+              }}
+            ></div>
+
+            <div
+              className="complete"
+              style={{
+                width:
+                  tasks.length === 0
+                    ? "0%"
+                    : `${(completedTasks / tasks.length) * 100}%`,
+              }}
+            ></div>
           </div>
 
           <div className="legend">
-            <span><b className="open-dot"></b>Open</span>
-            <span><b className="progress-dot"></b>In Progress</span>
-            <span><b className="complete-dot"></b>Completed</span>
+            <span>
+              <b className="open-dot"></b>Open
+            </span>
+            <span>
+              <b className="progress-dot"></b>In Progress
+            </span>
+            <span>
+              <b className="complete-dot"></b>Completed
+            </span>
           </div>
         </div>
 
         <div className="overdue-card card">
           <h3>Overdue Tasks</h3>
-          <p>Overdue rate: {employee.progress < 50 ? "20%" : "0%"}</p>
+          <p>
+            Overdue rate:{" "}
+            {tasks.length === 0
+              ? 0
+              : Math.round((overdueTasks.length / tasks.length) * 100)}
+            %
+          </p>
 
           <table>
             <thead>
@@ -193,23 +286,18 @@ function UserProfile() {
             </thead>
 
             <tbody>
-              {employee.progress < 50 ? (
-                <>
-                  <tr>
-                    <td>Setting Up Work Local Environment</td>
-                    <td>15 Days</td>
-                    <td>05/09/2025</td>
-                  </tr>
-                  <tr>
-                    <td>Business Process</td>
-                    <td>10 Days</td>
-                    <td>10/09/2025</td>
-                  </tr>
-                </>
-              ) : (
+              {overdueTasks.length === 0 ? (
                 <tr>
-                  <td colSpan="3">No overdue tasks.</td>
+                  <td colSpan="3" className="empty-text">No overdue tasks.</td>
                 </tr>
+              ) : (
+                overdueTasks.map((task) => (
+                  <tr key={task.id}>
+                    <td>{task.title}</td>
+                    <td>{calculateDaysOverdue(task.dueDate)} Days</td>
+                    <td>{task.dueDate}</td>
+                  </tr>
+                ))
               )}
             </tbody>
           </table>
@@ -223,8 +311,21 @@ function UserProfile() {
           onClose={() => setIsEditOpen(false)}
         />
       )}
+      {isAddTaskOpen && canEdit && (
+        <AddTaskModal
+          onSave={addTask}
+          onClose={() => setIsAddTaskOpen(false)}
+        />
+      )}
     </div>
   );
+}
+
+function calculateDaysOverdue(dueDate) {
+  const today = new Date();
+  const due = new Date(dueDate);
+  const difference = today - due;
+  return Math.ceil(difference / (1000 * 60 * 60 * 24));
 }
 
 function InfoItem({ icon, label, value }) {
@@ -275,15 +376,51 @@ function EditEmployeeModal({ employee, onSave, onClose }) {
         <p className="modal-user-name">{employee.name}</p>
 
         <div className="modal-grid">
-          <Input label="Name" value={formData.name} onChange={(v) => updateField("name", v)} />
-          <Input label="Role" value={formData.role} onChange={(v) => updateField("role", v)} />
-          <Input label="Team" value={formData.team} onChange={(v) => updateField("team", v)} />
-          <Input label="Gender" value={formData.gender} onChange={(v) => updateField("gender", v)} />
-          <Input label="Age" value={formData.age} onChange={(v) => updateField("age", v)} />
-          <Input label="Work Email" value={formData.email} onChange={(v) => updateField("email", v)} />
-          <Input label="Employee ID" value={formData.employeeId} onChange={(v) => updateField("employeeId", v)} />
-          <Input label="Location Based" value={formData.location} onChange={(v) => updateField("location", v)} />
-          <Input label="Phone Number" value={formData.phone} onChange={(v) => updateField("phone", v)} />
+          <Input
+            label="Name"
+            value={formData.name}
+            onChange={(value) => updateField("name", value)}
+          />
+          <Input
+            label="Role"
+            value={formData.role}
+            onChange={(value) => updateField("role", value)}
+          />
+          <Input
+            label="Team"
+            value={formData.team}
+            onChange={(value) => updateField("team", value)}
+          />
+          <Input
+            label="Gender"
+            value={formData.gender}
+            onChange={(value) => updateField("gender", value)}
+          />
+          <Input
+            label="Age"
+            value={formData.age}
+            onChange={(value) => updateField("age", value)}
+          />
+          <Input
+            label="Work Email"
+            value={formData.email}
+            onChange={(value) => updateField("email", value)}
+          />
+          <Input
+            label="Employee ID"
+            value={formData.employeeId}
+            onChange={(value) => updateField("employeeId", value)}
+          />
+          <Input
+            label="Location Based"
+            value={formData.location}
+            onChange={(value) => updateField("location", value)}
+          />
+          <Input
+            label="Phone Number"
+            value={formData.phone}
+            onChange={(value) => updateField("phone", value)}
+          />
         </div>
 
         <label className="modal-label">Progress</label>
@@ -293,7 +430,9 @@ function EditEmployeeModal({ employee, onSave, onClose }) {
           min="0"
           max="100"
           value={formData.progress}
-          onChange={(event) => updateField("progress", Number(event.target.value))}
+          onChange={(event) =>
+            updateField("progress", Number(event.target.value))
+          }
         />
 
         <label className="modal-label">Tags</label>
@@ -331,6 +470,116 @@ function Input({ label, value, onChange }) {
       <span>{label}</span>
       <input value={value} onChange={(event) => onChange(event.target.value)} />
     </label>
+  );
+}
+
+
+function AddTaskModal({ onSave, onClose }) {
+  const [formData, setFormData] = useState({
+    title: "",
+    description: "",
+    status: "OPEN",
+    category: "MANDATORY",
+    type: "DOCUMENT",
+    dueDate: "",
+  });
+
+  const updateField = (field, value) => {
+    setFormData({ ...formData, [field]: value });
+  };
+
+  const saveTask = async () => {
+    if (!formData.title || !formData.dueDate) {
+      alert("Please enter a task title and due date.");
+      return;
+    }
+
+    await onSave(formData);
+    onClose();
+  };
+
+  return (
+    <div className="modal-backdrop">
+      <div className="edit-modal">
+        <button className="modal-close" onClick={onClose}>
+          <X size={18} />
+        </button>
+
+        <h2>Add Onboarding Task</h2>
+
+        <div className="modal-grid">
+          <Input
+            label="Task Title"
+            value={formData.title}
+            onChange={(value) => updateField("title", value)}
+          />
+
+          <label className="modal-field">
+            <span>Status</span>
+            <select
+              value={formData.status}
+              onChange={(event) => updateField("status", event.target.value)}
+            >
+              <option value="OPEN">Open</option>
+              <option value="IN_PROGRESS">In Progress</option>
+              <option value="COMPLETED">Completed</option>
+            </select>
+          </label>
+
+          <label className="modal-field">
+            <span>Category</span>
+            <select
+              value={formData.category}
+              onChange={(event) => updateField("category", event.target.value)}
+            >
+              <option value="MANDATORY">Mandatory</option>
+              <option value="RECOMMENDED">Recommended</option>
+            </select>
+          </label>
+
+          <label className="modal-field">
+            <span>Type</span>
+            <select
+              value={formData.type}
+              onChange={(event) => updateField("type", event.target.value)}
+            >
+              <option value="DOCUMENT">Document</option>
+              <option value="VIDEO">Video</option>
+              <option value="LINK">Link</option>
+              <option value="SOFTWARE">Software</option>
+              <option value="FORM">Form</option>
+            </select>
+          </label>
+
+          <label className="modal-field">
+            <span>Due Date</span>
+            <input
+              type="date"
+              value={formData.dueDate}
+              onChange={(event) => updateField("dueDate", event.target.value)}
+            />
+          </label>
+        </div>
+
+        <label className="modal-label">Description</label>
+        <textarea
+          className="modal-textarea"
+          value={formData.description}
+          onChange={(event) => updateField("description", event.target.value)}
+        />
+
+        <div className="modal-actions">
+          <button className="save-btn" onClick={saveTask}>
+            <Save size={15} />
+            Save Task
+          </button>
+
+          <button className="cancel-btn" onClick={onClose}>
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
 
