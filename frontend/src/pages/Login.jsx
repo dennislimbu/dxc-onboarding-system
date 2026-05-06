@@ -28,7 +28,7 @@ function Login() {
       id: 2,
       name: "Sarah Johnson",
       role: "MANAGER",
-      landingPage: "/manager",
+      landingPage: "/dashboard",
     },
     {
       username: "testadmin",
@@ -36,7 +36,7 @@ function Login() {
       id: 3,
       name: "Olivia Green",
       role: "ADMIN",
-      landingPage: "/manager",
+      landingPage: "/dashboard",
     },
   ];
 

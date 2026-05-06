@@ -16,6 +16,7 @@ public class Task {
     private String status;
     private String category;
     private String type;
+    private String resourceUrl;
     private LocalDate dueDate;
     private LocalDate completedDate;
 
@@ -96,5 +97,13 @@ public class Task {
 
     public void setAssignedUser(User assignedUser) {
         this.assignedUser = assignedUser;
+    }
+
+    public String getResourceUrl() {
+        return resourceUrl;
+    }
+
+    public void setResourceUrl(String resourceUrl) {
+        this.resourceUrl = resourceUrl;
     }
 }

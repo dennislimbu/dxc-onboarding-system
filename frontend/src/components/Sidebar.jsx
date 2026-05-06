@@ -14,7 +14,9 @@ import "./Sidebar.css";
 function Sidebar({ collapsed, setCollapsed }) {
   const { user } = useAuth();
 
-  const navItems = [
+  const isManager = user?.role === "MANAGER" || user?.role === "ADMIN";
+
+  const userNavItems = [
     { label: "Dashboard", icon: LayoutDashboard, path: "/dashboard" },
     { label: "My Route", icon: Route, path: "/my-route" },
     { label: "Resources", icon: Folder, path: "/resources" },
@@ -22,13 +24,13 @@ function Sidebar({ collapsed, setCollapsed }) {
     { label: "Profile", icon: UserCircle, path: "/profile" },
   ];
 
-  if (user && (user.role === "MANAGER" || user.role === "ADMIN")) {
-    navItems.push({
-      label: "Manager",
-      icon: UserCircle,
-      path: "/manager",
-    });
-  }
+  const managerNavItems = [
+    { label: "Dashboard", icon: LayoutDashboard, path: "/dashboard" },
+    { label: "Resources", icon: Folder, path: "/resources" },
+    { label: "Profile", icon: UserCircle, path: "/profile" },
+  ];
+
+  const navItems = isManager ? managerNavItems : userNavItems;
 
   return (
     <aside className={`sidebar ${collapsed ? "collapsed" : ""}`}>

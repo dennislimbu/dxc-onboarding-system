@@ -20,17 +20,14 @@ function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
 
-          <Route
-            path="/"
-            element={<Navigate to="/dashboard" />}
-          />
+          <Route path="/" element={<Navigate to="/dashboard" />} />
 
           <Route
             path="/dashboard"
             element={
               <ProtectedRoute>
                 <MainLayout>
-                  <Dashboard />
+                  <DashboardRouter />
                 </MainLayout>
               </ProtectedRoute>
             }
@@ -39,7 +36,7 @@ function App() {
           <Route
             path="/my-route"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute allowedRoles={["USER"]}>
                 <MainLayout>
                   <MyRoute />
                 </MainLayout>
@@ -61,20 +58,9 @@ function App() {
           <Route
             path="/history"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute allowedRoles={["USER"]}>
                 <MainLayout>
                   <History />
-                </MainLayout>
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/manager"
-            element={
-              <ProtectedRoute allowedRoles={["MANAGER", "ADMIN"]}>
-                <MainLayout>
-                  <ManagerDashboard />
                 </MainLayout>
               </ProtectedRoute>
             }
@@ -105,6 +91,16 @@ function App() {
       </AuthProvider>
     </BrowserRouter>
   );
+}
+
+function DashboardRouter() {
+  const loggedUser = JSON.parse(sessionStorage.getItem("loggedInUser"));
+
+  if (loggedUser?.role === "MANAGER" || loggedUser?.role === "ADMIN") {
+    return <ManagerDashboard />;
+  }
+
+  return <Dashboard />;
 }
 
 export default App;

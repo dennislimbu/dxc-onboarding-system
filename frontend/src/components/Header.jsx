@@ -1,14 +1,32 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Bell, ChevronDown, LogOut, Settings, UserCircle } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import dxcLogo from "../assets/images/dxc-logo.svg";
+import { getAvatar } from "../services/avatarService";
 import "./Header.css";
 
 function Header() {
   const [open, setOpen] = useState(false);
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const [avatar, setAvatar] = useState(null);
+
+  useEffect(() => {
+    const loadAvatar = () => {
+      if (user?.id) {
+        setAvatar(getAvatar(user.id));
+      }
+    };
+
+    loadAvatar();
+
+    window.addEventListener("avatarUpdated", loadAvatar);
+
+    return () => {
+      window.removeEventListener("avatarUpdated", loadAvatar);
+    };
+  }, [user]);
   
 
   const handleLogout = () => {
@@ -29,7 +47,11 @@ function Header() {
 
         <div className="profile-menu-wrapper">
           <button className="profile-btn" onClick={() => setOpen(!open)}>
-            <UserCircle size={20} />
+            {avatar ? (
+              <img src={avatar} alt="User avatar" className="header-avatar" />
+            ) : (
+              <UserCircle size={20} />
+            )}
             <span>{user ? user.name : "User"}</span>
             <ChevronDown size={16} />
           </button>

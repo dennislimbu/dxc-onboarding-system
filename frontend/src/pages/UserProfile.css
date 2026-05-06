@@ -343,3 +343,111 @@
   font-family: inherit;
   font-weight: 600;
 }
+
+.profile-avatar img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.avatar-upload-btn {
+  display: inline-flex;
+  margin: 10px 0 18px;
+  border: 1px solid var(--border-light);
+  background: var(--background-card);
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.avatar-upload-btn input {
+  display: none;
+}
+
+.modal-avatar img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.manager-profile-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.manager-profile-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.manager-stat-card {
+  background: var(--background-card);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  padding: 22px;
+  box-shadow: var(--shadow-soft);
+}
+
+.manager-stat-card span {
+  display: block;
+  color: var(--text-secondary);
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.manager-stat-card strong {
+  font-size: 34px;
+  color: var(--midnight-blue);
+}
+
+.manager-stat-card.blue {
+  border-left: 5px solid var(--status-open);
+}
+
+.manager-stat-card.amber {
+  border-left: 5px solid var(--status-progress);
+}
+
+.manager-stat-card.green {
+  border-left: 5px solid var(--status-complete);
+}
+
+.manager-stat-card.red {
+  border-left: 5px solid var(--status-overdue);
+}
+
+.manager-profile-card p {
+  margin-top: 8px;
+  color: var(--text-secondary);
+  max-width: 760px;
+}
+
+.manager-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.manager-actions button {
+  border: none;
+  background: var(--midnight-blue);
+  color: white;
+  border-radius: 999px;
+  padding: 10px 18px;
+  font-weight: 800;
+}
+
+.manager-actions button:hover {
+  filter: brightness(0.9);
+}
+
+@media (max-width: 1200px) {
+  .manager-profile-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

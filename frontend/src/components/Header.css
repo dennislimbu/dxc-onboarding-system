@@ -92,3 +92,10 @@
 .logo-home-btn:hover {
   transform: scale(1.04);
 }
+
+.header-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: cover;
+}

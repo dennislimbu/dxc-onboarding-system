@@ -13,32 +13,46 @@ import {
   Save,
   X,
 } from "lucide-react";
+
+import { useAuth } from "../context/AuthContext";
 import { getUserById, updateUser } from "../services/userService";
 import { getTasksByUser, createTaskForUser } from "../services/taskService";
-import { useAuth } from "../context/AuthContext";
+import { getAvatar, saveAvatar } from "../services/avatarService";
+
 import "./UserProfile.css";
 
 function UserProfile() {
   const { id } = useParams();
   const { user } = useAuth();
-  const currentRole = user?.role;
-  const canEdit = currentRole === "MANAGER" || currentRole === "ADMIN";
-  
 
   const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isAddTaskOpen, setIsAddTaskOpen] = useState(false);
   const [employee, setEmployee] = useState(null);
   const [tasks, setTasks] = useState([]);
+  const [avatar, setAvatar] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const [isAddTaskOpen, setIsAddTaskOpen] = useState(false);
+  const canEdit = user?.role === "MANAGER" || user?.role === "ADMIN";
+  const isOwnManagerProfile =
+    !id && (user?.role === "MANAGER" || user?.role === "ADMIN");
+
   useEffect(() => {
-    loadUser();
-  }, [id]);
+    if (user) {
+      loadUser();
+    }
+  }, [id, user]);
 
   const loadUser = async () => {
     try {
-      const data = await getUserById(id || 1);
-      const userTasks = await getTasksByUser(data.id);
+      setLoading(true);
+
+      const profileId =
+        id && (user?.role === "MANAGER" || user?.role === "ADMIN")
+          ? id
+          : user.id;
+
+      const data = await getUserById(profileId);
+      const userTasks = await getTasksByUser(profileId);
 
       setEmployee({
         id: data.id,
@@ -58,6 +72,7 @@ function UserProfile() {
       });
 
       setTasks(userTasks);
+      setAvatar(getAvatar(profileId));
     } catch (error) {
       console.error("Failed to load user", error);
     } finally {
@@ -95,12 +110,27 @@ function UserProfile() {
     setTasks(updatedTasks);
   };
 
+  const handleAvatarUpload = (event) => {
+    const file = event.target.files[0];
+
+    if (!file) return;
+
+    const reader = new FileReader();
+
+    reader.onloadend = () => {
+      saveAvatar(employee.id, reader.result);
+      setAvatar(reader.result);
+    };
+
+    reader.readAsDataURL(file);
+  };
+
   if (loading) {
     return <p className="loading-text">Loading user profile...</p>;
   }
 
   if (!employee) {
-    return <p>User not found.</p>;
+    return <p className="empty-text">User not found.</p>;
   }
 
   const completedTasks = tasks.filter(
@@ -128,7 +158,16 @@ function UserProfile() {
       <section className="profile-left card">
         <h2>Employee Details</h2>
 
-        <div className="profile-avatar">🧑‍💻</div>
+        <div className="profile-avatar">
+          {avatar ? <img src={avatar} alt="User avatar" /> : "🧑‍💻"}
+        </div>
+
+        {canEdit && (
+          <label className="avatar-upload-btn">
+            Upload Image
+            <input type="file" accept="image/*" onChange={handleAvatarUpload} />
+          </label>
+        )}
 
         <h3>{employee.name}</h3>
 
@@ -141,7 +180,11 @@ function UserProfile() {
           <h3>Basic Information</h3>
 
           {canEdit && (
-            <button className="edit-small-btn" onClick={() => setIsEditOpen(true)}>
+            <button
+              className="edit-small-btn"
+              onClick={() => setIsEditOpen(true)}
+            >
+              <Edit size={14} />
               Edit
             </button>
           )}
@@ -189,15 +232,55 @@ function UserProfile() {
       </section>
 
       <section className="profile-right">
+        {isOwnManagerProfile ? (
+          <div className="manager-profile-panel">
+            <div className="manager-profile-grid">
+              <ManagerStat title="Users Joined" value="5" tone="blue" />
+              <ManagerStat title="Tasks In Progress" value="3" tone="amber" />
+              <ManagerStat title="Mostly Complete" value="2" tone="green" />
+              <ManagerStat title="Tasks Overdue" value="2" tone="red" />
+            </div>
+
+            <div className="card manager-profile-card">
+              <h3>Manager Overview</h3>
+              <p>
+                This profile has manager/admin access. Use the dashboard to review
+                team onboarding progress, add tasks, update employee details and track
+                overdue induction items.
+              </p>
+            </div>
+
+            <div className="card manager-profile-card">
+              <h3>Quick Actions</h3>
+
+              <div className="manager-actions">
+                <button onClick={() => (window.location.href = "/dashboard")}>
+                  View Team Dashboard
+                </button>
+
+                <button onClick={() => (window.location.href = "/resources")}>
+                  Manage Resources
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <>
+            {
+                    <section className="profile-right">
         <div className="notes-card card">
           <div className="notes-header">
             <h3>Notes</h3>
 
-          {canEdit && (
-            <button className="edit-small-btn" onClick={() => setIsEditOpen(true)}>
-              Edit
-            </button>
-          )}
+            {canEdit && (
+              <button
+                className="edit-small-btn"
+                onClick={() => setIsEditOpen(true)}
+              >
+                <Edit size={14} />
+                Edit
+              </button>
+            )}
           </div>
 
           <textarea
@@ -213,12 +296,17 @@ function UserProfile() {
         <div className="task-overview-card card">
           <div className="task-overview-header">
             <h3>Task Overview</h3>
+
             {canEdit && (
-              <button className="add-task-btn" onClick={() => setIsAddTaskOpen(true)}>
+              <button
+                className="add-task-btn"
+                onClick={() => setIsAddTaskOpen(true)}
+              >
                 Add Task
               </button>
             )}
           </div>
+
           <p>Completion rate: {progress}%</p>
 
           <div className="stacked-bar">
@@ -288,7 +376,9 @@ function UserProfile() {
             <tbody>
               {overdueTasks.length === 0 ? (
                 <tr>
-                  <td colSpan="3" className="empty-text">No overdue tasks.</td>
+                  <td colSpan="3" className="empty-text">
+                    No overdue tasks.
+                  </td>
                 </tr>
               ) : (
                 overdueTasks.map((task) => (
@@ -303,14 +393,21 @@ function UserProfile() {
           </table>
         </div>
       </section>
+            }
+          </>
+        )}
+      </section>
+
 
       {isEditOpen && canEdit && (
         <EditEmployeeModal
           employee={employee}
+          avatar={avatar}
           onSave={saveEmployee}
           onClose={() => setIsEditOpen(false)}
         />
       )}
+
       {isAddTaskOpen && canEdit && (
         <AddTaskModal
           onSave={addTask}
@@ -325,6 +422,7 @@ function calculateDaysOverdue(dueDate) {
   const today = new Date();
   const due = new Date(dueDate);
   const difference = today - due;
+
   return Math.ceil(difference / (1000 * 60 * 60 * 24));
 }
 
@@ -340,7 +438,7 @@ function InfoItem({ icon, label, value }) {
   );
 }
 
-function EditEmployeeModal({ employee, onSave, onClose }) {
+function EditEmployeeModal({ employee, avatar, onSave, onClose }) {
   const [formData, setFormData] = useState({
     ...employee,
     tagsText: employee.tags.join(", "),
@@ -372,7 +470,9 @@ function EditEmployeeModal({ employee, onSave, onClose }) {
 
         <h2>Edit Employee Details</h2>
 
-        <div className="modal-avatar">🧑‍💻</div>
+        <div className="modal-avatar">
+          {avatar ? <img src={avatar} alt="User avatar" /> : "🧑‍💻"}
+        </div>        
         <p className="modal-user-name">{employee.name}</p>
 
         <div className="modal-grid">
@@ -464,16 +564,6 @@ function EditEmployeeModal({ employee, onSave, onClose }) {
   );
 }
 
-function Input({ label, value, onChange }) {
-  return (
-    <label className="modal-field">
-      <span>{label}</span>
-      <input value={value} onChange={(event) => onChange(event.target.value)} />
-    </label>
-  );
-}
-
-
 function AddTaskModal({ onSave, onClose }) {
   const [formData, setFormData] = useState({
     title: "",
@@ -482,6 +572,7 @@ function AddTaskModal({ onSave, onClose }) {
     category: "MANDATORY",
     type: "DOCUMENT",
     dueDate: "",
+    resourceUrl: "",
   });
 
   const updateField = (field, value) => {
@@ -559,6 +650,12 @@ function AddTaskModal({ onSave, onClose }) {
               onChange={(event) => updateField("dueDate", event.target.value)}
             />
           </label>
+
+          <Input
+            label="Resource Link"
+            value={formData.resourceUrl}
+            onChange={(value) => updateField("resourceUrl", value)}
+          />
         </div>
 
         <label className="modal-label">Description</label>
@@ -579,6 +676,24 @@ function AddTaskModal({ onSave, onClose }) {
           </button>
         </div>
       </div>
+    </div>
+  );
+}
+
+function Input({ label, value, onChange }) {
+  return (
+    <label className="modal-field">
+      <span>{label}</span>
+      <input value={value} onChange={(event) => onChange(event.target.value)} />
+    </label>
+  );
+}
+
+function ManagerStat({ title, value, tone }) {
+  return (
+    <div className={`manager-stat-card ${tone}`}>
+      <span>{title}</span>
+      <strong>{value}</strong>
     </div>
   );
 }

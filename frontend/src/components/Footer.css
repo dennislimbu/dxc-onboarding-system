@@ -1,9 +1,45 @@
 .app-footer {
-  margin-top: 40px;
-  padding: 18px 0 4px;
+  position: fixed;
+  left: var(--sidebar-expanded);
+  right: 0;
+  bottom: 0;
+  height: var(--footer-height);
+  padding: 0 32px;
+  background: rgba(246, 243, 240, 0.92);
+  backdrop-filter: blur(12px);
   border-top: 1px solid var(--border-light);
   color: var(--text-secondary);
   display: flex;
   justify-content: space-between;
+  align-items: center;
   font-size: 13px;
+  font-weight: 600;
+  z-index: 50;
+  transition: left 0.25s ease;
+}
+
+.main-area.collapsed .app-footer {
+  left: var(--sidebar-collapsed);
+}
+
+.app-footer span:first-child {
+  color: var(--midnight-blue);
+  font-weight: 800;
+}
+
+.app-footer span:last-child {
+  color: var(--text-secondary);
+}
+
+@media (max-width: 800px) {
+  .app-footer {
+    left: 0;
+    padding: 0 18px;
+    font-size: 12px;
+    gap: 12px;
+  }
+
+  .app-footer span:last-child {
+    display: none;
+  }
 }

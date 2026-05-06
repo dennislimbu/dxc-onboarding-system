@@ -118,7 +118,16 @@ function TaskRow({ task, onComplete }) {
           {formatStatus(task.status, isOverdue)}
         </span>
 
-        <button className="resource-btn">
+        <button
+          className="resource-btn"
+          onClick={() => {
+            if (task.resourceUrl) {
+              window.open(task.resourceUrl, "_blank", "noopener,noreferrer");
+            } else {
+              alert("No resource link has been added for this task.");
+            }
+          }}
+        >
           <ExternalLink size={15} />
           Resource
         </button>

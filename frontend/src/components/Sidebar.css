@@ -11,6 +11,10 @@
   overflow: hidden;
 }
 
+.sidebar a:hover {
+  background: #f8fafc;
+}
+
 .sidebar.collapsed {
   width: var(--sidebar-collapsed);
 }
