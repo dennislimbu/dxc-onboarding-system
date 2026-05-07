@@ -29,6 +29,7 @@ public class TaskController {
 
     @GetMapping("/user/{userId}")
     public List<Task> getTasksByUser(@PathVariable Long userId) {
+        User user = userRepository.findById(userId).orElseThrow();
         return taskRepository.findByAssignedUserId(userId);
     }
 
